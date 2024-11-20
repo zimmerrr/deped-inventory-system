@@ -108,6 +108,8 @@ async function onSubmit() {
         textColor: 'white',
       })
     }
+  } catch (error) {
+    throw new Error('Something went wrong')
   } finally {
     loading.value = false
   }
