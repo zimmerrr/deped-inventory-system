@@ -51,7 +51,6 @@ const router = useRouter()
 const route = useRoute()
 const userRole = ref(LocalStorage.getItem('USER_ROLE') || '')
 
-
 </script>
 
 <style lang="sass">
