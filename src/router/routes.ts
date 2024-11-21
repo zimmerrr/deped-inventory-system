@@ -11,6 +11,11 @@ const routes: RouteRecordRaw[] = [
         meta: { showHeader: true },
       },
       {
+        path: 'inventory',
+        component: () => import('pages/inventory.vue'),
+        meta: { showHeader: true },
+      },
+      {
         path: 'login',
         component: () => import('pages/login.vue'),
       },

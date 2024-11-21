@@ -12,6 +12,9 @@ export interface LoginInput {
 export const token = ref<string | null>(LocalStorage.getItem('AUTH_TOKEN') || '')
 watch(token, (val) => { LocalStorage.set('AUTH_TOKEN', val || '') })
 
+export const userRole = ref<string | null>(LocalStorage.getItem('USER_ROLE') || '')
+watch(userRole, (val) => { LocalStorage.set('USER_ROLE', val || '') }, { immediate: true })
+
 const config = useConfig()
 const { viewUser } = useViewerUser()
 export function useLogin() {
@@ -36,7 +39,8 @@ export function useLogin() {
       const data = await response.json()
       token.value = data.token as any
       if (token.value) {
-        await viewUser(token.value)
+        const user = await viewUser(token.value)
+        userRole.value = user?.role as string
       }
     } catch (error) {
       console.error('Error occurred:', error)

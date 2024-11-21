@@ -1,19 +1,7 @@
 <template>
   <q-page
     class="flex flex-center"
-  >
-    <div v-if="!loading">
-      <div
-        v-for="(item, idx) in ITEMS"
-        :key="idx"
-      >
-        {{ item._id }}
-      </div>
-    </div>
-    <div v-else>
-      <q-spinner size="5vw" />
-    </div>
-  </q-page>
+  />
 </template>
 
 <script lang="ts" setup>

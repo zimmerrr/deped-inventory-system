@@ -10,11 +10,6 @@ const NAVIGATION = [
     role: 'admin',
   },
   {
-    name: 'Register',
-    to: '/register',
-    role: 'employee',
-  },
-  {
     name: 'Inventory',
     to: '/inventory',
     role: 'employee',

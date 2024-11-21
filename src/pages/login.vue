@@ -140,7 +140,7 @@ onMounted(() => {
 .q-form
   max-width: 30vw
 .login-text
-  font-size: 3rem
+  font-size: 1.5rem
 
 .password-toggle
   :deep(.q-field__native)
