@@ -88,11 +88,13 @@
                 <q-td :props="props">
                   <div class="row q-gutter-md justify-center">
                     <q-btn
+                      v-if="active"
                       label="VIEW QR"
                       color="green"
                       @click="currItem = props.row._id"
                     />
                     <q-btn
+                      v-if="active"
                       label="UPDATE"
                       color="orange-13"
                       @click="
@@ -106,8 +108,8 @@
                     />
                     <q-btn
                       :disable="deleteItemLoading"
-                      label="DELETE"
-                      color="red"
+                      :label="active ? 'DELETE' : 'RESTORE'"
+                      :color="active ? 'red' : 'green'"
                       @click="deleteItem(props.row._id, props.row.controlNumber)"
                     />
                   </div>
@@ -613,20 +615,37 @@ async function fetchItems() {
 async function deleteItem(id: string, controlNumber: string) {
   try {
     deleteItemLoading.value = true
-    Dialog.create({
-      title: 'Confirm Action',
-      message: `Are you sure you want to delete <b>${controlNumber}</b>? This action cannot be undone.`,
-      html: true,
-      color: 'black',
-      ok: { label: 'Delete Item', color: 'negative' },
-      cancel: true,
-    }).onOk(async () => {
-      await updateItem({
-        _id: id,
-        active: false,
+    if (active.value) {
+      Dialog.create({
+        title: 'Confirm Action',
+        message: `Are you sure you want to delete <b>${controlNumber}</b>?`,
+        html: true,
+        color: 'black',
+        ok: { label: 'Delete Item', color: 'negative' },
+        cancel: true,
+      }).onOk(async () => {
+        await updateItem({
+          _id: id,
+          active: false,
+        })
+        fetchItems()
       })
-      fetchItems()
-    })
+    } else {
+      Dialog.create({
+        title: 'Confirm Action',
+        message: `Are you sure you want to restore <b>${controlNumber}</b>?.`,
+        html: true,
+        color: 'black',
+        ok: { label: 'Restore Item', color: 'positive' },
+        cancel: true,
+      }).onOk(async () => {
+        await updateItem({
+          _id: id,
+          active: true,
+        })
+        fetchItems()
+      })
+    }
   } catch (error) {
     console.error('Error deleting item:', error)
   } finally {

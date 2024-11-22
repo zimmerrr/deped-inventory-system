@@ -551,15 +551,17 @@ async function onSubmit() {
           message: response.message,
           color: 'negative',
         })
+        form.username = ''
       } else {
         Notify.create({
           message: 'User added successfully',
           color: 'positive',
         })
         showDialog.value = false
+        clear()
       }
     } else if (showUpdateDialog.value) {
-      await updateUser({
+      const response = await updateUser({
         _id: form._id,
         firstName: form.firstName,
         middleName: form.middleName,
@@ -568,11 +570,23 @@ async function onSubmit() {
         username: form.username,
         password: form.password,
       })
-      showUpdateDialog.value = false
+      if (response.message) {
+        Notify.create({
+          message: response.message,
+          color: 'negative',
+        })
+        form.username = ''
+      } else {
+        Notify.create({
+          message: 'User added successfully',
+          color: 'positive',
+        })
+        showUpdateDialog.value = false
+        clear()
+      }
     }
 
     fetchItems()
-    clear()
   } catch (error) {
     console.log(error)
   } finally {
