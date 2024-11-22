@@ -48,6 +48,16 @@
                     />
                   </div>
                 </div>
+                <div class="">
+                  <div>
+                    <q-btn
+                      color="green-9"
+                      label="Scan Item"
+                      class="q-px-md generic-button"
+                      @click="showScanner = true"
+                    />
+                  </div>
+                </div>
               </template>
 
               <template #header-cell-id="props">
@@ -308,6 +318,114 @@
     </q-card>
   </q-dialog>
 
+  <!-- SCANNER DIALOG -->
+  <q-dialog
+    v-model="showScanner"
+    persistent
+  >
+    <q-card style="width: 1200px; max-width: 90vw;">
+      <q-form
+        ref="formRef"
+        class="text-center q-px-md q-mt-lg q-mx-auto"
+        @submit.prevent="onSubmit"
+      >
+        <div class="row q-col-gutter-md q-pa-sm">
+          <div class="col-6">
+            <QRScanner
+              ref="scannerRef"
+              :disable="scanLoading"
+              class="q-mx-auto q-mb-xl"
+              style="width: 450px;"
+              @scan="onScan"
+            />
+          </div>
+          <div class="col-6 q-col-gutter-md q-mt-sm">
+            <q-input
+              v-model="form.controlNumber"
+              label="Control Number"
+              color="accent"
+              bg-color="primary"
+              borderless
+              hide-bottom-space
+              autofocus
+              :disable="loading"
+              class="text-primary generic-input"
+            />
+            <q-input
+              v-model="form.name"
+              label="Item Name"
+              color="accent"
+              bg-color="primary"
+              borderless
+              hide-bottom-space
+              :disable="loading"
+              class="text-primary generic-input"
+            />
+            <q-select
+              v-model="form.category"
+              label="Category"
+              color="accent"
+              bg-color="primary"
+              borderless
+              hide-bottom-space
+              :disable="loading"
+              :options="['For disposal', 'For archiving']"
+              class="text-primary generic-input"
+            />
+            <q-input
+              v-model="form.location"
+              label="Location"
+              color="accent"
+              bg-color="primary"
+              borderless
+              hide-bottom-space
+              :disable="loading"
+              class="text-primary generic-input"
+            />
+            <q-input
+              v-model="form.description"
+              label="Description"
+              color="accent"
+              bg-color="primary"
+              borderless
+              hide-bottom-space
+              :disable="loading"
+              class="text-primary generic-input"
+            />
+            <div class="row q-mx-auto q-col-gutter-md">
+              <div class="col-4">
+                <q-btn
+                  color="orange-13"
+                  label="Cancel"
+                  class="full-width generic-button"
+                  @click="showScanner = false; clear()"
+                />
+              </div>
+              <div class="col-4">
+                <q-btn
+                  color="red"
+                  label="Clear"
+                  class="full-width generic-button"
+                  @click="clear"
+                />
+              </div>
+              <div class="col-4">
+                <q-btn
+                  color="green"
+                  label="Update"
+                  :loading="loading"
+                  class="full-width generic-button"
+                  type="submit"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </q-form>
+    </q-card>
+  </q-dialog>
+
+  <!-- QR CODE -->
   <q-dialog
     :model-value="!!currItem"
     persistent
@@ -366,11 +484,15 @@ import { ref, reactive, onMounted, watch } from 'vue'
 import { type Item, viewItems, addItem, updateItem } from 'src/components/backend/items'
 import { Dialog, Notify, QForm } from 'quasar'
 import QrcodeVue, { type Level } from 'qrcode.vue'
+import QRScanner from 'src/components/QRScanner.vue'
+import { debounce } from 'lodash'
 
 const showDialog = ref(false)
 const showUpdateDialog = ref(false)
+const showScanner = ref(false)
 const loading = ref(false)
 const deleteItemLoading = ref(false)
+const scanLoading = ref(false)
 const formRef = ref<QForm>(null as any)
 const currItem = ref(null as any)
 
@@ -416,12 +538,22 @@ async function onSubmit() {
         location: form.location,
         description: form.description,
       })
+      showUpdateDialog.value = false
+    } else if (showScanner.value) {
+      await updateItem({
+        _id: form._id,
+        controlNumber: form.controlNumber,
+        name: form.name,
+        category: form.category,
+        location: form.location,
+        description: form.description,
+      })
       Notify.create({
         message: 'Item updated successfully',
         color: 'green',
       })
 
-      showUpdateDialog.value = false
+      showScanner.value = false
     }
 
     fetchItems()
@@ -431,6 +563,27 @@ async function onSubmit() {
   } finally {
     loading.value = false
   }
+}
+
+const debounceOnScan = debounce(async function(data: string) {
+  try {
+    scanLoading.value = true
+    let result = await viewItems('true', data)
+    result = result[0]
+    console.log(result)
+    form._id = result._id
+    form.controlNumber = result.controlNumber
+    form.name = result.name
+    form.category = result.category
+    form.location = result.location
+    form.description = result.description
+  } finally {
+    scanLoading.value = false
+  }
+}, 300)
+
+async function onScan(data: string) {
+  debounceOnScan(data)
 }
 
 async function fetchItems() {
@@ -482,7 +635,7 @@ function downloadQrCode() {
 }
 
 onMounted(fetchItems)
-watch(filter, fetchItems)
+watch(searchQuery, fetchItems)
 
 const COLUMNS: {
   name: string;

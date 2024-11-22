@@ -15,11 +15,6 @@ const NAVIGATION = [
     role: 'employee',
   },
   {
-    name: 'Scan',
-    to: '/scanner',
-    role: 'employee',
-  },
-  {
     name: 'Logout',
     to: '/logout',
     role: 'all',
