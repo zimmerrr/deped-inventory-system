@@ -17,6 +17,22 @@
 
           <q-btn
             flat
+            label="Users"
+            color="black"
+            no-caps
+            class="menu-button"
+            @click="router.replace('users')"
+          />
+          <q-btn
+            flat
+            label="Items"
+            color="black"
+            no-caps
+            class="menu-button"
+            @click="router.replace('items');"
+          />
+          <q-btn
+            flat
             label="Logout"
             color="black"
             no-caps
@@ -31,8 +47,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { LocalStorage } from 'quasar'
 import { useRouter, useRoute } from 'vue-router'
 
 defineOptions({

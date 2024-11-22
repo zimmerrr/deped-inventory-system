@@ -25,6 +25,26 @@ const routes: RouteRecordRaw[] = [
       },
     ],
   },
+  {
+    path: '/admin',
+    component: () => import('layouts/AdminLayout.vue'),
+    children: [
+      {
+        path: 'users',
+        component: () => import('pages/admin/users.vue'),
+        meta: { showHeader: true },
+      },
+      {
+        path: 'items',
+        component: () => import('pages/admin/items.vue'),
+        meta: { showHeader: true },
+      },
+      {
+        path: 'logout',
+        component: () => import('pages/logout.vue'),
+      },
+    ],
+  },
 
   // Always leave this as last one,
   // but you can also remove it

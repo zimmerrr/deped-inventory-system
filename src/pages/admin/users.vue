@@ -5,7 +5,7 @@
         <div class="col-12 q-pa-md bg-secondary">
           <div class="bg-white card full-height q-pt-xs">
             <q-table
-              :rows="items"
+              :rows="user"
               class="text-uppercase"
               :loading="loading"
               :columns="COLUMNS"
@@ -23,7 +23,7 @@
               </template>
               <template #top>
                 <div class="text-h6 q-pl-md">
-                  Inventory
+                  Users
                 </div>
                 <q-space />
                 <q-input
@@ -41,20 +41,21 @@
                 <div class="q-mx-md">
                   <div>
                     <q-btn
-                      color="green"
-                      label="Add Item"
+                      :label="active ? 'Active' : 'Inactive'"
                       class="q-px-md generic-button"
-                      @click="showDialog = true"
+                      flat
+                      @click="active ? active = false : active = true; fetchItems()"
                     />
                   </div>
                 </div>
-                <div class="">
+
+                <div class="q-mx-md">
                   <div>
                     <q-btn
-                      color="green-9"
-                      label="Scan Item"
+                      color="green"
+                      label="Add User"
                       class="q-px-md generic-button"
-                      @click="showScanner = true"
+                      @click="showDialog = true"
                     />
                   </div>
                 </div>
@@ -74,31 +75,46 @@
                   <span class="highlight-control-number">{{ props.row._id }}</span>
                 </q-td>
               </template>
+              <template #header-cell-password="props">
+                <q-th
+                  :props="props"
+                  class="hidden"
+                />
+              </template>
+              <template #body-cell-password="props">
+                <q-td
+                  :props="props"
+                  class="hidden"
+                >
+                  <span class="highlight-control-number">{{ props.row.password }}</span>
+                </q-td>
+              </template>
               <template #body-cell-button="props">
                 <q-td :props="props">
                   <div class="row q-gutter-md justify-center">
-                    <q-btn
-                      label="VIEW QR"
-                      color="green"
-                      @click="currItem = props.row._id"
-                    />
                     <q-btn
                       label="UPDATE"
                       color="orange-13"
                       @click="
                         showUpdateDialog = true;
                         form._id = props.row._id;
-                        form.controlNumber = props.row.controlNumber;
-                        form.name = props.row.name;
-                        form.category = props.row.category;
-                        form.location = props.row.location;
-                        form.description = props.row.description"
+                        form.firstName = props.row.firstName;
+                        form.middleName = props.row.middleName;
+                        form.lastName = props.row.lastName;
+                        form.division = props.row.division;
+                        form.username = props.row.username;
+                        form.password = props.row.password"
                     />
                     <q-btn
-                      :disable="deleteItemLoading"
+                      label="CHANGE PASSWORD"
+                      color="orange-14"
+                      @click="changePasswordDialog = true; form._id = props.row._id;"
+                    />
+                    <q-btn
+                      :disable="deleteUserLoading"
                       label="DELETE"
                       color="red"
-                      @click="deleteItem(props.row._id, props.row.controlNumber)"
+                      @click="deleteUser(props.row._id, props.row.username)"
                     />
                   </div>
                 </q-td>
@@ -123,46 +139,23 @@
       >
         <div class="column q-col-gutter-md q-pa-sm">
           <div class="text-h4">
-            Add Item
+            Add User
           </div>
           <q-input
-            v-model="form.controlNumber"
-            label="Control Number"
+            v-model="form.username"
+            label="Employee ID"
             color="accent"
             bg-color="primary"
             borderless
-            hide-bottom-space
             autofocus
-            :rules="[(val: any) => !!val || 'This field is required']"
-            :disable="loading"
-            class="text-primary generic-input"
-          />
-          <q-input
-            v-model="form.name"
-            label="Item Name"
-            color="accent"
-            bg-color="primary"
-            borderless
             hide-bottom-space
             :rules="[(val: any) => !!val || 'This field is required']"
             :disable="loading"
             class="text-primary generic-input"
           />
-          <q-select
-            v-model="form.category"
-            label="Category"
-            color="accent"
-            bg-color="primary"
-            borderless
-            hide-bottom-space
-            :rules="[(val: any) => !!val || 'This field is required']"
-            :disable="loading"
-            :options="['For disposal', 'For archiving']"
-            class="text-primary generic-input"
-          />
           <q-input
-            v-model="form.location"
-            label="Location"
+            v-model="form.firstName"
+            label="First Name"
             color="accent"
             bg-color="primary"
             borderless
@@ -172,8 +165,8 @@
             class="text-primary generic-input"
           />
           <q-input
-            v-model="form.description"
-            label="Description"
+            v-model="form.middleName"
+            label="Middle Name"
             color="accent"
             bg-color="primary"
             borderless
@@ -182,6 +175,40 @@
             :disable="loading"
             class="text-primary generic-input"
           />
+          <q-input
+            v-model="form.lastName"
+            label="Last Name"
+            color="accent"
+            bg-color="primary"
+            borderless
+            hide-bottom-space
+            :rules="[(val: any) => !!val || 'This field is required']"
+            :disable="loading"
+            class="text-primary generic-input"
+          />
+          <q-input
+            v-model="form.division"
+            label="Division"
+            color="accent"
+            bg-color="primary"
+            borderless
+            hide-bottom-space
+            :rules="[(val: any) => !!val || 'This field is required']"
+            :disable="loading"
+            class="text-primary generic-input"
+          />
+          <q-input
+            v-model="form.password"
+            label="Password"
+            color="accent"
+            bg-color="primary"
+            borderless
+            hide-bottom-space
+            :rules="[(val: any) => !!val || 'This field is required']"
+            :disable="loading"
+            class="text-primary generic-input"
+          />
+
           <div class="row q-mx-auto q-col-gutter-md">
             <div>
               <q-btn
@@ -227,11 +254,22 @@
       >
         <div class="column q-col-gutter-md q-pa-sm">
           <div class="text-h4">
-            Update Item
+            Update User
           </div>
           <q-input
-            v-model="form.controlNumber"
-            label="Control Number"
+            v-model="form.username"
+            label="Employee ID"
+            color="accent"
+            bg-color="primary"
+            borderless
+            hide-bottom-space
+            :rules="[(val: any) => !!val || 'This field is required']"
+            :disable="loading"
+            class="text-primary generic-input"
+          />
+          <q-input
+            v-model="form.firstName"
+            label="First Name"
             color="accent"
             bg-color="primary"
             borderless
@@ -242,31 +280,8 @@
             class="text-primary generic-input"
           />
           <q-input
-            v-model="form.name"
-            label="Item Name"
-            color="accent"
-            bg-color="primary"
-            borderless
-            hide-bottom-space
-            :rules="[(val: any) => !!val || 'This field is required']"
-            :disable="loading"
-            class="text-primary generic-input"
-          />
-          <q-select
-            v-model="form.category"
-            label="Category"
-            color="accent"
-            bg-color="primary"
-            borderless
-            hide-bottom-space
-            :rules="[(val: any) => !!val || 'This field is required']"
-            :disable="loading"
-            :options="['For disposal', 'For archiving']"
-            class="text-primary generic-input"
-          />
-          <q-input
-            v-model="form.location"
-            label="Location"
+            v-model="form.middleName"
+            label="Middle Name"
             color="accent"
             bg-color="primary"
             borderless
@@ -276,8 +291,8 @@
             class="text-primary generic-input"
           />
           <q-input
-            v-model="form.description"
-            label="Description"
+            v-model="form.lastName"
+            label="Last Name"
             color="accent"
             bg-color="primary"
             borderless
@@ -286,6 +301,18 @@
             :disable="loading"
             class="text-primary generic-input"
           />
+          <q-input
+            v-model="form.division"
+            label="Division"
+            color="accent"
+            bg-color="primary"
+            borderless
+            hide-bottom-space
+            :rules="[(val: any) => !!val || 'This field is required']"
+            :disable="loading"
+            class="text-primary generic-input"
+          />
+
           <div class="row q-mx-auto q-col-gutter-md">
             <div>
               <q-btn
@@ -318,106 +345,62 @@
     </q-card>
   </q-dialog>
 
-  <!-- SCANNER DIALOG -->
+  <!-- CHANGE PASSWORD DIALOG -->
   <q-dialog
-    v-model="showScanner"
+    v-model="changePasswordDialog"
     persistent
   >
-    <q-card style="width: 1200px; max-width: 90vw;">
+    <q-card style="width: 900px; max-width: 30vw;">
       <q-form
-        ref="formRef"
-        class="text-center q-px-md q-mt-lg q-mx-auto"
-        @submit.prevent="onSubmit"
+        ref="passwordRef"
+        class="text-center q-px-md q-mb-md q-mt-sm q-mx-auto"
+        @submit.prevent="updatePassword"
       >
-        <div class="row q-col-gutter-md q-pa-sm">
-          <div class="col-6">
-            <QRScanner
-              ref="scannerRef"
-              :disable="scanLoading"
-              class="q-mx-auto q-mb-xl"
-              style="width: 450px;"
-              @scan="onScan"
-            />
+        <div class="column q-col-gutter-md q-pa-sm">
+          <div class="text-h6">
+            Change Password
           </div>
-          <div class="col-6 q-col-gutter-md q-mt-sm">
-            <q-input
-              v-model="form.controlNumber"
-              label="Control Number"
-              color="accent"
-              bg-color="primary"
-              borderless
-              hide-bottom-space
-              autofocus
-              :disable="loading"
-              class="text-primary generic-input"
-            />
-            <q-input
-              v-model="form.name"
-              label="Item Name"
-              color="accent"
-              bg-color="primary"
-              borderless
-              hide-bottom-space
-              :disable="loading"
-              class="text-primary generic-input"
-            />
-            <q-select
-              v-model="form.category"
-              label="Category"
-              color="accent"
-              bg-color="primary"
-              borderless
-              hide-bottom-space
-              :disable="loading"
-              :options="['For disposal', 'For archiving']"
-              class="text-primary generic-input"
-            />
-            <q-input
-              v-model="form.location"
-              label="Location"
-              color="accent"
-              bg-color="primary"
-              borderless
-              hide-bottom-space
-              :disable="loading"
-              class="text-primary generic-input"
-            />
-            <q-input
-              v-model="form.description"
-              label="Description"
-              color="accent"
-              bg-color="primary"
-              borderless
-              hide-bottom-space
-              :disable="loading"
-              class="text-primary generic-input"
-            />
-            <div class="row q-mx-auto q-col-gutter-md">
-              <div class="col-4">
-                <q-btn
-                  color="orange-13"
-                  label="Cancel"
-                  class="full-width generic-button"
-                  @click="showScanner = false; clear()"
-                />
-              </div>
-              <div class="col-4">
-                <q-btn
-                  color="red"
-                  label="Clear"
-                  class="full-width generic-button"
-                  @click="clear"
-                />
-              </div>
-              <div class="col-4">
-                <q-btn
-                  color="green"
-                  label="Update"
-                  :loading="loading"
-                  class="full-width generic-button"
-                  type="submit"
-                />
-              </div>
+          <q-input
+            v-model="password.password1"
+            label="Password"
+            color="accent"
+            bg-color="primary"
+            borderless
+            autofocus
+            hide-bottom-space
+            :rules="[(val: any) => !!val || 'This field is required']"
+            :disable="loading"
+            class="text-primary generic-input"
+          />
+          <q-input
+            v-model="password.password2"
+            label="Re-enter Password"
+            color="accent"
+            bg-color="primary"
+            borderless
+            hide-bottom-space
+            :rules="[(val: any) => !!val || 'This field is required']"
+            :disable="loading"
+            class="text-primary generic-input"
+          />
+
+          <div class="row q-mx-auto q-col-gutter-md">
+            <div class="col-6">
+              <q-btn
+                color="orange-13"
+                label="Cancel"
+                class="full-width generic-button"
+                @click="changePasswordDialog = false; clearPassword()"
+              />
+            </div>
+            <div class="col-6">
+              <q-btn
+                color="green"
+                label="Update"
+                :loading="loading"
+                class="full-width generic-button"
+                type="submit"
+              />
             </div>
           </div>
         </div>
@@ -481,79 +464,111 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch } from 'vue'
-import { type Item, viewItems, addItem, updateItem } from 'src/components/backend/items'
+import { type User, useViewerUser, addUser, updateUser } from 'src/components/backend/user'
 import { Dialog, Notify, QForm } from 'quasar'
-import QrcodeVue, { type Level } from 'qrcode.vue'
-import QRScanner from 'src/components/QRScanner.vue'
-import { debounce } from 'lodash'
 
 const showDialog = ref(false)
 const showUpdateDialog = ref(false)
-const showScanner = ref(false)
+const changePasswordDialog = ref(false)
 const loading = ref(false)
-const deleteItemLoading = ref(false)
-const scanLoading = ref(false)
+const deleteUserLoading = ref(false)
 const formRef = ref<QForm>(null as any)
+const passwordRef = ref<QForm>(null as any)
 const currItem = ref(null as any)
 
-const items = ref<Item[]>([])
+const user = ref<User[]>([])
 const searchQuery = ref('')
-const filter = ref('')
+const filter = ref('employee')
+const active = ref(true)
 const form = reactive({
   _id: '',
-  controlNumber: '',
-  name: '',
-  category: '',
-  location: '',
-  description: '',
+  firstName: '',
+  middleName: '',
+  lastName: '',
+  division: '',
+  username: '',
+  password: '',
 })
+
+const password = reactive({
+  password1: '',
+  password2: '',
+})
+
+const { viewUsers } = useViewerUser()
 
 function clear() {
   form._id = ''
-  form.controlNumber = ''
-  form.name = ''
-  form.category = ''
-  form.location = ''
-  form.description = ''
+  form.firstName = ''
+  form.middleName = ''
+  form.lastName = ''
+  form.division = ''
+  form.username = ''
+  form.password = ''
   formRef.value.reset()
 }
 
+function clearPassword() {
+  password.password1 = ''
+  password.password2 = ''
+  passwordRef.value.reset()
+}
+
+async function updatePassword() {
+  try {
+    loading.value = true
+    if (password.password1 !== password.password2) {
+      return Notify.create({
+        message: 'Passwords do not match',
+        color: 'negative',
+      })
+    }
+
+    await updateUser({
+      _id: form._id,
+      password: password.password1,
+    })
+    changePasswordDialog.value = false
+  } finally {
+    loading.value = false
+  }
+}
 async function onSubmit() {
   try {
     loading.value = true
     if (showDialog.value) {
-      await addItem({
-        controlNumber: form.controlNumber,
-        name: form.name,
-        category: form.category,
-        location: form.location,
-        description: form.description,
-      })
-    } else if (showUpdateDialog.value) {
-      await updateItem({
-        _id: form._id,
-        controlNumber: form.controlNumber,
-        name: form.name,
-        category: form.category,
-        location: form.location,
-        description: form.description,
-      })
-      showUpdateDialog.value = false
-    } else if (showScanner.value) {
-      await updateItem({
-        _id: form._id,
-        controlNumber: form.controlNumber,
-        name: form.name,
-        category: form.category,
-        location: form.location,
-        description: form.description,
-      })
-      Notify.create({
-        message: 'Item updated successfully',
-        color: 'green',
+      const response = await addUser({
+        firstName: form.firstName,
+        middleName: form.middleName,
+        lastName: form.lastName,
+        division: form.division,
+        username: form.username,
+        password: form.password,
       })
 
-      showScanner.value = false
+      if (response.message) {
+        Notify.create({
+          message: response.message,
+          color: 'negative',
+        })
+      } else {
+        Notify.create({
+          message: 'User added successfully',
+          color: 'positive',
+        })
+        showDialog.value = false
+      }
+    } else if (showUpdateDialog.value) {
+      await updateUser({
+        _id: form._id,
+        firstName: form.firstName,
+        middleName: form.middleName,
+        lastName: form.lastName,
+        division: form.division,
+        username: form.username,
+        password: form.password,
+      })
+      showUpdateDialog.value = false
     }
 
     fetchItems()
@@ -565,32 +580,11 @@ async function onSubmit() {
   }
 }
 
-const debounceOnScan = debounce(async function(data: string) {
-  try {
-    scanLoading.value = true
-    let result = await viewItems(true, data)
-    result = result[0]
-    console.log(result)
-    form._id = result._id
-    form.controlNumber = result.controlNumber
-    form.name = result.name
-    form.category = result.category
-    form.location = result.location
-    form.description = result.description
-  } finally {
-    scanLoading.value = false
-  }
-}, 300)
-
-async function onScan(data: string) {
-  debounceOnScan(data)
-}
-
 async function fetchItems() {
   try {
     loading.value = true
-    const _items = await viewItems(true, searchQuery.value.trim(), filter.value.trim())
-    items.value = _items
+    const _user = await viewUsers(active.value, searchQuery.value.trim(), filter.value.trim())
+    user.value = _user
   } catch (error) {
     console.error('Error fetching items:', error)
   } finally {
@@ -598,18 +592,18 @@ async function fetchItems() {
   }
 }
 
-async function deleteItem(id: string, controlNumber: string) {
+async function deleteUser(id: string, username: string) {
   try {
-    deleteItemLoading.value = true
+    deleteUserLoading.value = true
     Dialog.create({
       title: 'Confirm Action',
-      message: `Are you sure you want to delete <b>${controlNumber}</b>? This action cannot be undone.`,
+      message: `Are you sure you want to delete <b>${username}</b>? This action cannot be undone.`,
       html: true,
       color: 'black',
       ok: { label: 'Delete Item', color: 'negative' },
       cancel: true,
     }).onOk(async () => {
-      await updateItem({
+      await updateUser({
         _id: id,
         active: false,
       })
@@ -618,11 +612,9 @@ async function deleteItem(id: string, controlNumber: string) {
   } catch (error) {
     console.error('Error deleting item:', error)
   } finally {
-    deleteItemLoading.value = false
+    deleteUserLoading.value = false
   }
 }
-
-const level = ref<Level>('M')
 
 const qrcodeContainer = ref()
 
@@ -670,34 +662,41 @@ const COLUMNS: {
     align: 'center',
   },
   {
-    name: 'controlNumber',
-    label: 'CONTROL NUMBER',
-    field: (r: any) => r.controlNumber,
+    name: 'password',
+    label: 'PASSWORD',
+    field: (r: any) => r.password,
     required: true,
     align: 'center',
   },
   {
-    name: 'name',
-    label: 'ITEM NAME',
-    field: (r: any) => r.name,
+    name: 'username',
+    label: 'EMPLOYEE ID',
+    field: (r: any) => r.username,
+    required: true,
     align: 'center',
   },
   {
-    name: 'category',
-    label: 'CATEGORY',
-    field: (r: any) => r.category,
+    name: 'firstName',
+    label: 'FIRST NAME',
+    field: (r: any) => r.firstName,
     align: 'center',
   },
   {
-    name: 'location',
-    label: 'LOCATION',
-    field: (r: any) => r.location,
+    name: 'middleName',
+    label: 'MIDDLE NAME',
+    field: (r: any) => r.middleName,
     align: 'center',
   },
   {
-    name: 'description',
-    label: 'DESCRIPTION',
-    field: (r: any) => r.description,
+    name: 'lastName',
+    label: 'LAST NAME',
+    field: (r: any) => r.lastName,
+    align: 'center',
+  },
+  {
+    name: 'division',
+    label: 'DIVISION',
+    field: (r: any) => r.division,
     align: 'center',
   },
   {

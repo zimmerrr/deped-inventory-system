@@ -41,10 +41,20 @@
                 <div class="q-mx-md">
                   <div>
                     <q-btn
+                      :label="active ? 'Active' : 'Inactive'"
+                      class="q-px-md generic-button"
+                      flat
+                      @click="active ? active = false : active = true; fetchItems()"
+                    />
+                  </div>
+                </div>
+                <div class="q-mr-md">
+                  <div>
+                    <q-btn
                       color="green"
                       label="Add Item"
                       class="q-px-md generic-button"
-                      @click="showDialog = true"
+                      @click="showDialog = true;"
                     />
                   </div>
                 </div>
@@ -499,6 +509,7 @@ const currItem = ref(null as any)
 const items = ref<Item[]>([])
 const searchQuery = ref('')
 const filter = ref('')
+const active = ref(true)
 const form = reactive({
   _id: '',
   controlNumber: '',
@@ -568,7 +579,7 @@ async function onSubmit() {
 const debounceOnScan = debounce(async function(data: string) {
   try {
     scanLoading.value = true
-    let result = await viewItems(true, data)
+    let result = await viewItems(active.value, data)
     result = result[0]
     console.log(result)
     form._id = result._id
@@ -589,8 +600,9 @@ async function onScan(data: string) {
 async function fetchItems() {
   try {
     loading.value = true
-    const _items = await viewItems(true, searchQuery.value.trim(), filter.value.trim())
+    const _items = await viewItems(active.value, searchQuery.value.trim(), filter.value.trim())
     items.value = _items
+    console.log(items.value)
   } catch (error) {
     console.error('Error fetching items:', error)
   } finally {

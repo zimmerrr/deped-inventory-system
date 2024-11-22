@@ -15,16 +15,16 @@ export interface Item {
   active?: boolean
 }
 
-export async function viewItems(active?: string, query?: string, filter?: string) {
+export async function viewItems(active?: boolean, query?: string, filter?: string) {
   try {
     const token = LocalStorage.getItem('AUTH_TOKEN')
     const url = new URL(`${config.API_HOST}/items`)
     if (query) {
       url.searchParams.append('query', query)
     }
-    if (active) {
-      url.searchParams.append('active', active)
-    }
+
+    url.searchParams.append('active', active ? 'true' : 'false')
+
     if (filter) {
       url.searchParams.append('filter', filter)
     }
@@ -88,7 +88,6 @@ export async function updateItem(item: Item) {
         ...item,
       }),
     })
-    console.log(item)
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`)
     }

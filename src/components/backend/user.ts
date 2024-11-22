@@ -9,11 +9,11 @@ export interface User {
   firstName?: string,
   middleName?: string,
   lastName?: string
-  employeeId?: string
   division?: string
   username?: string
   password?: string
   role?: string
+  active?: boolean
 }
 
 export function useViewerUser() {
@@ -21,13 +21,12 @@ export function useViewerUser() {
     try {
       const _token = LocalStorage.getItem('AUTH_TOKEN')
       const response = await fetch(`${config.API_HOST}/users/myProfile`, {
-        method: 'POST',
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          authorization: `Bearer ${token || _token}`,
         },
-        body: JSON.stringify({
-          token: token || _token,
-        }),
+
       })
 
       if (!response.ok) {
@@ -42,7 +41,41 @@ export function useViewerUser() {
     }
   }
 
-  return { viewUser }
+  async function viewUsers(active?: boolean, query?: string, filter?: string) {
+    try {
+      const token = LocalStorage.getItem('AUTH_TOKEN')
+      const url = new URL(`${config.API_HOST}/users`)
+
+      if (query) {
+        url.searchParams.append('query', query)
+      }
+
+      url.searchParams.append('active', active ? 'true' : 'false')
+
+      if (filter) {
+        url.searchParams.append('filter', filter)
+      }
+
+      const response = await fetch(url.toString(), {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          authorization: `Bearer ${token}`,
+        },
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      return data
+    } catch (error) {
+      console.error('Error occurred:', error)
+    }
+  }
+
+  return { viewUser, viewUsers }
 }
 
 export function viewUsers() {
@@ -53,8 +86,7 @@ export function viewUsers() {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          authorization: `${token}`,
-
+          authorization: `Bearer ${token}`,
         },
       })
 
@@ -71,4 +103,51 @@ export function viewUsers() {
   }
 
   return { viewUsersByRole }
+}
+
+export async function addUser(user: User) {
+  try {
+    const token = LocalStorage.getItem('AUTH_TOKEN')
+    const response = await fetch(`${config.API_HOST}/users`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        ...user,
+      }),
+
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`)
+    }
+    const data = await response.json()
+    return data
+  } catch (error) {
+    console.error('Error occurred:', error)
+  }
+}
+
+export async function updateUser(user: User) {
+  try {
+    const token = LocalStorage.getItem('AUTH_TOKEN')
+    const response = await fetch(`${config.API_HOST}/users/update/${user._id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        ...user,
+      }),
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`)
+    }
+  } catch (error) {
+    console.error('Error occurred:', error)
+  }
 }

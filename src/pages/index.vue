@@ -8,11 +8,13 @@
 import { ref, onMounted } from 'vue'
 import { useConfig } from 'src/components/backend/config'
 import { useAuth } from 'src/components/backend/auth'
+import { useViewerUser } from 'src/components/backend/user'
 import { LocalStorage } from 'quasar'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const { validateToken } = useAuth()
+const { viewUser } = useViewerUser()
 
 const ITEMS = ref<any[]>([])
 const config = useConfig()
@@ -27,22 +29,14 @@ function isLoggedIn() {
 }
 onMounted(async () => {
   if (isLoggedIn()) {
-    router.replace('/')
+    const user = await viewUser()
+    if (user?.role === 'admin') {
+      router.replace('/admin/users')
+    } else if (user?.role === 'employee') {
+      router.replace('/inventory')
+    }
   } else {
     router.replace('/login')
-  }
-  try {
-    loading.value = true
-    const response = await fetch(`${config.API_HOST}/items`)
-    if (!response.ok) {
-      throw new Error('Failed to fetch items')
-    }
-    const data = await response.json()
-    ITEMS.value = data.items
-  } catch (error) {
-    console.error('Error fetching items:', error)
-  } finally {
-    loading.value = false
   }
 })
 
