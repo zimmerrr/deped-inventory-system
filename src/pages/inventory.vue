@@ -628,10 +628,26 @@ const qrcodeContainer = ref()
 
 function downloadQrCode() {
   const canvas = qrcodeContainer.value.querySelector('canvas')
-  const link = document.createElement('a')
-  link.download = 'qr-code.png'
-  link.href = canvas.toDataURL('image/png')
-  link.click()
+  const ctx = canvas.getContext('2d')
+
+  const borderWidth = 20
+  const borderedCanvas = document.createElement('canvas')
+  borderedCanvas.width = canvas.width + 2 * borderWidth
+  borderedCanvas.height = canvas.height + 2 * borderWidth
+
+  const canvasCtx = borderedCanvas.getContext('2d')
+
+  if (canvasCtx) {
+    canvasCtx.fillStyle = 'white'
+    canvasCtx.fillRect(0, 0, borderedCanvas.width, borderedCanvas.height)
+
+    canvasCtx.drawImage(canvas, borderWidth, borderWidth)
+
+    const link = document.createElement('a')
+    link.download = 'QR CODE'
+    link.href = borderedCanvas.toDataURL('image/png')
+    link.click()
+  }
 }
 
 onMounted(fetchItems)
