@@ -61,7 +61,7 @@
 <script lang="ts" setup>
 import { ref, onBeforeUnmount, watch, toRef } from 'vue'
 import { Html5Qrcode, Html5QrcodeScannerState } from 'html5-qrcode'
-import { LocalStorage } from 'quasar'
+import { LocalStorage, Notify } from 'quasar'
 import type { CameraDevice } from 'html5-qrcode'
 
 const emit = defineEmits<{
@@ -119,6 +119,8 @@ async function selectCamera(cameraId: string) {
     },
     (decoded: string) => {
       console.log('QR Decoded:', decoded)
+      Notify.create({ message: 'Scanned successfully', color: 'green' })
+
       if (!props.disable) emit('scan', decoded)
     },
     undefined,
