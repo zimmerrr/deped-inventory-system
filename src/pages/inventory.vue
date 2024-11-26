@@ -570,7 +570,6 @@ const debounceOnScan = debounce(async function(data: string) {
     scanLoading.value = true
     let result = await viewItems(true, data)
     result = result[0]
-    console.log(result)
     form._id = result._id
     form.controlNumber = result.controlNumber
     form.name = result.name

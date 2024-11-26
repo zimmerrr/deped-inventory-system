@@ -59,7 +59,7 @@ export default defineConfig((/* ctx */) => {
       // publicPath: '/',
       // analyze: true,
       env: {
-        API_HOST: process.env.API_HOST || 'https://g188k323-3000.asse.devtunnels.ms',
+        API_HOST: process.env.API_HOST || 'https://deped-simple-inventory-be.vercel.app',
       },
       // rawDefine: {}
       // ignorePublicFolder: true,

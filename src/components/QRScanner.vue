@@ -118,7 +118,6 @@ async function selectCamera(cameraId: string) {
       aspectRatio: 1,
     },
     (decoded: string) => {
-      console.log('QR Decoded:', decoded)
       Notify.create({ message: 'Scanned successfully', color: 'green' })
 
       if (!props.disable) emit('scan', decoded)
