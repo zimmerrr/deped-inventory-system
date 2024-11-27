@@ -33,6 +33,14 @@
           />
           <q-btn
             flat
+            label="Logs"
+            color="black"
+            no-caps
+            class="menu-button"
+            @click="router.replace('logs');"
+          />
+          <q-btn
+            flat
             label="Logout"
             color="black"
             no-caps

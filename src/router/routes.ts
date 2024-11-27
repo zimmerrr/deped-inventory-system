@@ -40,6 +40,12 @@ const routes: RouteRecordRaw[] = [
         meta: { showHeader: true },
       },
       {
+        path: 'logs',
+        component: () => import('pages/admin/logs.vue'),
+        meta: { showHeader: true },
+
+      },
+      {
         path: 'logout',
         component: () => import('pages/logout.vue'),
       },
