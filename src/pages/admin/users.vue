@@ -28,7 +28,7 @@
                 <q-space />
                 <q-input
                   v-model="searchQuery"
-                  color="accent"
+                  color="secondary"
                   filled
                   borderless
                   dense
@@ -93,8 +93,8 @@
                 <q-td :props="props">
                   <div class="row q-gutter-md justify-center">
                     <q-btn
-                      label="UPDATE"
-                      color="orange-13"
+                      label="VIEW USER"
+                      color="secondary"
                       @click="
                         showUpdateDialog = true;
                         form._id = props.row._id;
@@ -106,14 +106,15 @@
                         form.password = props.row.password"
                     />
                     <q-btn
+                      v-if="active"
                       label="CHANGE PASSWORD"
-                      color="orange-14"
+                      color="green-9"
                       @click="changePasswordDialog = true; form._id = props.row._id;"
                     />
                     <q-btn
                       :disable="deleteUserLoading"
-                      label="DELETE"
-                      color="red"
+                      :label="active ? 'DELETE' : 'RESTORE'"
+                      :color="active ? 'red' : 'green'"
                       @click="deleteUser(props.row._id, props.row.username)"
                     />
                   </div>
@@ -144,7 +145,7 @@
           <q-input
             v-model="form.username"
             label="Employee ID"
-            color="accent"
+            color="secondary"
             bg-color="primary"
             borderless
             autofocus
@@ -156,7 +157,7 @@
           <q-input
             v-model="form.firstName"
             label="First Name"
-            color="accent"
+            color="secondary"
             bg-color="primary"
             borderless
             hide-bottom-space
@@ -167,7 +168,7 @@
           <q-input
             v-model="form.middleName"
             label="Middle Name"
-            color="accent"
+            color="secondary"
             bg-color="primary"
             borderless
             hide-bottom-space
@@ -178,7 +179,7 @@
           <q-input
             v-model="form.lastName"
             label="Last Name"
-            color="accent"
+            color="secondary"
             bg-color="primary"
             borderless
             hide-bottom-space
@@ -186,21 +187,22 @@
             :disable="loading"
             class="text-primary generic-input"
           />
-          <q-input
+          <q-select
             v-model="form.division"
-            label="Division"
-            color="accent"
+            label="Unit"
+            color="secondary"
             bg-color="primary"
             borderless
             hide-bottom-space
-            :rules="[(val: any) => !!val || 'This field is required']"
             :disable="loading"
+            :options="UNIT"
+            :rules="[(val: any) => !!val || 'This field is required']"
             class="text-primary generic-input"
           />
           <q-input
             v-model="form.password"
             label="Password"
-            color="accent"
+            color="secondary"
             bg-color="primary"
             borderless
             hide-bottom-space
@@ -259,18 +261,18 @@
           <q-input
             v-model="form.username"
             label="Employee ID"
-            color="accent"
+            color="secondary"
             bg-color="primary"
             borderless
             hide-bottom-space
             :rules="[(val: any) => !!val || 'This field is required']"
-            :disable="loading"
+            disable
             class="text-primary generic-input"
           />
           <q-input
             v-model="form.firstName"
             label="First Name"
-            color="accent"
+            color="secondary"
             bg-color="primary"
             borderless
             hide-bottom-space
@@ -282,7 +284,7 @@
           <q-input
             v-model="form.middleName"
             label="Middle Name"
-            color="accent"
+            color="secondary"
             bg-color="primary"
             borderless
             hide-bottom-space
@@ -293,7 +295,7 @@
           <q-input
             v-model="form.lastName"
             label="Last Name"
-            color="accent"
+            color="secondary"
             bg-color="primary"
             borderless
             hide-bottom-space
@@ -301,15 +303,16 @@
             :disable="loading"
             class="text-primary generic-input"
           />
-          <q-input
+          <q-select
             v-model="form.division"
-            label="Division"
-            color="accent"
+            label="Unit"
+            color="secondary"
             bg-color="primary"
             borderless
             hide-bottom-space
-            :rules="[(val: any) => !!val || 'This field is required']"
             :disable="loading"
+            :options="UNIT"
+            :rules="[(val: any) => !!val || 'This field is required']"
             class="text-primary generic-input"
           />
 
@@ -363,7 +366,7 @@
           <q-input
             v-model="password.password1"
             label="Password"
-            color="accent"
+            color="secondary"
             bg-color="primary"
             borderless
             autofocus
@@ -375,7 +378,7 @@
           <q-input
             v-model="password.password2"
             label="Re-enter Password"
-            color="accent"
+            color="secondary"
             bg-color="primary"
             borderless
             hide-bottom-space
@@ -466,6 +469,7 @@
 import { ref, reactive, onMounted, watch } from 'vue'
 import { type User, useViewerUser, addUser, updateUser } from 'src/components/backend/user'
 import { Dialog, Notify, QForm } from 'quasar'
+import { UNIT } from 'src/components/constants'
 
 const showDialog = ref(false)
 const showUpdateDialog = ref(false)
@@ -528,6 +532,10 @@ async function updatePassword() {
       _id: form._id,
       password: password.password1,
     })
+    Notify.create({
+      message: 'Passwords has been changed successfully',
+      color: 'positive',
+    })
     changePasswordDialog.value = false
   } finally {
     loading.value = false
@@ -578,7 +586,7 @@ async function onSubmit() {
         form.username = ''
       } else {
         Notify.create({
-          message: 'User added successfully',
+          message: 'User updated successfully',
           color: 'positive',
         })
         showUpdateDialog.value = false
@@ -609,20 +617,41 @@ async function fetchItems() {
 async function deleteUser(id: string, username: string) {
   try {
     deleteUserLoading.value = true
-    Dialog.create({
-      title: 'Confirm Action',
-      message: `Are you sure you want to delete <b>${username}</b>? This action cannot be undone.`,
-      html: true,
-      color: 'black',
-      ok: { label: 'Delete Item', color: 'negative' },
-      cancel: true,
-    }).onOk(async () => {
-      await updateUser({
-        _id: id,
-        active: false,
+    if (active.value) {
+      Dialog.create({
+        title: 'Confirm Action',
+        message: `Are you sure you want to delete <b>USER: ${username}</b>?`,
+        html: true,
+        color: 'black',
+        ok: { label: 'Delete User', color: 'negative' },
+        cancel: true,
+      }).onOk(async () => {
+        await updateUser({
+          _id: id,
+          active: false,
+        })
+        Notify.create({
+          message: 'User deleted successfully',
+          color: 'positive',
+        })
+        fetchItems()
       })
-      fetchItems()
-    })
+    } else {
+      Dialog.create({
+        title: 'Confirm Action',
+        message: `Are you sure you want to restore <b>USER: ${username}</b>?.`,
+        html: true,
+        color: 'black',
+        ok: { label: 'Restore User', color: 'positive' },
+        cancel: true,
+      }).onOk(async () => {
+        await updateUser({
+          _id: id,
+          active: true,
+        })
+        fetchItems()
+      })
+    }
   } catch (error) {
     console.error('Error deleting item:', error)
   } finally {
@@ -709,7 +738,7 @@ const COLUMNS: {
   },
   {
     name: 'division',
-    label: 'DIVISION',
+    label: 'UNIT',
     field: (r: any) => r.division,
     align: 'center',
   },

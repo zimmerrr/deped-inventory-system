@@ -61,7 +61,7 @@
                 <div class="">
                   <div>
                     <q-btn
-                      color="green-9"
+                      color="secondary"
                       label="Scan Item"
                       class="q-px-md generic-button"
                       @click="showScanner = true"
@@ -89,16 +89,11 @@
                   <div class="row q-gutter-md justify-center">
                     <q-btn
                       v-if="active"
-                      label="VIEW QR"
+                      label="VIEW ITEM"
                       color="green"
-                      @click="currItem = props.row._id"
-                    />
-                    <q-btn
-                      v-if="active"
-                      label="UPDATE"
-                      color="orange-13"
                       @click="
                         showUpdateDialog = true;
+                        currItem = props.row._id;
                         form._id = props.row._id;
                         form.controlNumber = props.row.controlNumber;
                         form.name = props.row.name;
@@ -149,15 +144,16 @@
             :disable="loading"
             class="text-primary generic-input"
           />
-          <q-input
+          <q-select
             v-model="form.name"
             label="Item Name"
             color="accent"
             bg-color="primary"
             borderless
             hide-bottom-space
-            :rules="[(val: any) => !!val || 'This field is required']"
             :disable="loading"
+            :options="FILE_NAMES"
+            :rules="[(val: any) => !!val || 'This field is required']"
             class="text-primary generic-input"
           />
           <q-select
@@ -167,20 +163,21 @@
             bg-color="primary"
             borderless
             hide-bottom-space
-            :rules="[(val: any) => !!val || 'This field is required']"
             :disable="loading"
-            :options="['For disposal', 'For archiving']"
+            :options="FILE_STATUS"
+            :rules="[(val: any) => !!val || 'This field is required']"
             class="text-primary generic-input"
           />
-          <q-input
+          <q-select
             v-model="form.location"
             label="Location"
             color="accent"
             bg-color="primary"
             borderless
             hide-bottom-space
-            :rules="[(val: any) => !!val || 'This field is required']"
             :disable="loading"
+            :options="FILE_LOCATIONS"
+            :rules="[(val: any) => !!val || 'This field is required']"
             class="text-primary generic-input"
           />
           <q-input
@@ -234,13 +231,53 @@
     <q-card style="width: 900px; max-width: 50vw;">
       <q-form
         ref="formRef"
-        class="text-center q-px-md q-mb-md q-mt-sm q-mx-auto"
+        class="row text-center q-px-md q-mb-md q-mt-sm q-mx-auto"
         @submit.prevent="onSubmit"
       >
-        <div class="column q-col-gutter-md q-pa-sm">
-          <div class="text-h4">
-            Update Item
+        <q-btn
+          color="black"
+          flat
+          dense
+          icon-right="close"
+          size="lg"
+          class="absolute-top-right q-mr-md"
+          @click="showUpdateDialog = false; clear()"
+        />
+        <div class="col-12 text-h4 q-my-sm">
+          Update Item
+        </div>
+        <div class="col-6">
+          <div class="row items-center justify-center fit">
+            <div class="bg-white q-pa-md inline-block">
+              <div
+                v-if="currItem"
+                ref="qrcodeContainer"
+                class="qr-code"
+              >
+                <qrcode-vue
+                  :value="currItem"
+                  level="H"
+                  :size="250"
+                  class="qrcode fit"
+                  :loading="!currItem"
+                />
+              </div>
+              <q-spinner
+                v-else
+                size="128px"
+                class="q-ma-xl"
+                color="black"
+              />
+              <q-btn
+                label="Download"
+                color="green"
+                class="q-px-lg q-mt-md generic-button"
+                @click="downloadQrCode(`${form.controlNumber} - ${form.name}`)"
+              />
+            </div>
           </div>
+        </div>
+        <div class="col-6 column q-col-gutter-md q-pa-sm">
           <q-input
             v-model="form.controlNumber"
             label="Control Number"
@@ -250,18 +287,19 @@
             hide-bottom-space
             autofocus
             :rules="[(val: any) => !!val || 'This field is required']"
-            :disable="loading"
+            disable
             class="text-primary generic-input"
           />
-          <q-input
+          <q-select
             v-model="form.name"
             label="Item Name"
             color="accent"
             bg-color="primary"
             borderless
             hide-bottom-space
-            :rules="[(val: any) => !!val || 'This field is required']"
             :disable="loading"
+            :options="FILE_NAMES"
+            :rules="[(val: any) => !!val || 'This field is required']"
             class="text-primary generic-input"
           />
           <q-select
@@ -271,22 +309,24 @@
             bg-color="primary"
             borderless
             hide-bottom-space
-            :rules="[(val: any) => !!val || 'This field is required']"
             :disable="loading"
-            :options="['For disposal', 'For archiving']"
+            :options="FILE_STATUS"
+            :rules="[(val: any) => !!val || 'This field is required']"
             class="text-primary generic-input"
           />
-          <q-input
+          <q-select
             v-model="form.location"
             label="Location"
             color="accent"
             bg-color="primary"
             borderless
             hide-bottom-space
-            :rules="[(val: any) => !!val || 'This field is required']"
             :disable="loading"
+            :options="FILE_LOCATIONS"
+            :rules="[(val: any) => !!val || 'This field is required']"
             class="text-primary generic-input"
           />
+
           <q-input
             v-model="form.description"
             label="Description"
@@ -301,17 +341,9 @@
           <div class="row q-mx-auto q-col-gutter-md">
             <div>
               <q-btn
-                color="orange-13"
-                label="Cancel"
-                class="q-px-xl generic-button"
-                @click="showUpdateDialog = false; clear()"
-              />
-            </div>
-            <div>
-              <q-btn
                 color="red"
                 label="Clear"
-                class="q-px-xl generic-button"
+                class="q-px-lg generic-button"
                 @click="clear"
               />
             </div>
@@ -320,7 +352,7 @@
                 color="green"
                 label="Update"
                 :loading="loading"
-                class="q-px-xl generic-button"
+                class="q-px-lg generic-button"
                 type="submit"
               />
             </div>
@@ -363,14 +395,15 @@
               :disable="loading"
               class="text-primary generic-input"
             />
-            <q-input
+            <q-select
               v-model="form.name"
               label="Item Name"
               color="accent"
               bg-color="primary"
               borderless
               hide-bottom-space
-              :disable="loading"
+              disable
+              :options="FILE_NAMES"
               class="text-primary generic-input"
             />
             <q-select
@@ -381,10 +414,11 @@
               borderless
               hide-bottom-space
               :disable="loading"
-              :options="['For disposal', 'For archiving']"
+              :options="FILE_STATUS"
+              :rules="[(val: any) => !!val || 'This field is required']"
               class="text-primary generic-input"
             />
-            <q-input
+            <q-select
               v-model="form.location"
               label="Location"
               color="accent"
@@ -392,6 +426,8 @@
               borderless
               hide-bottom-space
               :disable="loading"
+              :options="FILE_LOCATIONS"
+              :rules="[(val: any) => !!val || 'This field is required']"
               class="text-primary generic-input"
             />
             <q-input
@@ -436,59 +472,6 @@
       </q-form>
     </q-card>
   </q-dialog>
-
-  <!-- QR CODE -->
-  <q-dialog
-    :model-value="!!currItem"
-    persistent
-    @before-hide="currItem = null"
-  >
-    <q-card
-      class="full-width q-pb-md"
-      style="width: 400px; max-width: min(40vh, 80vw)"
-    >
-      <div class="row justify-center q-gutter-md q-pa-sm">
-        <div class="col-12">
-          <div class="text-center">
-            <div class="bg-white q-pa-md inline-block">
-              <div
-                v-if="currItem"
-                ref="qrcodeContainer"
-                class="qr-code"
-              >
-                <qrcode-vue
-                  :value="currItem"
-                  level="H"
-                  :size="250"
-                  class="qrcode fit"
-                  :loading="!currItem"
-                />
-              </div>
-              <q-spinner
-                v-else
-                size="128px"
-                class="q-ma-xl"
-                color="black"
-              />
-            </div>
-          </div>
-        </div>
-
-        <q-btn
-          v-close-popup
-          label="Close"
-          color="red"
-          class="q-px-xl"
-        />
-        <q-btn
-          label="Download"
-          color="green"
-          class="q-px-lg"
-          @click="downloadQrCode"
-        />
-      </div>
-    </q-card>
-  </q-dialog>
 </template>
 
 <script setup lang="ts">
@@ -498,6 +481,7 @@ import { Dialog, Notify, QForm } from 'quasar'
 import QrcodeVue, { type Level } from 'qrcode.vue'
 import QRScanner from 'src/components/QRScanner.vue'
 import { debounce } from 'lodash'
+import { FILE_NAMES, FILE_LOCATIONS, FILE_STATUS } from 'src/components/constants'
 
 const showDialog = ref(false)
 const showUpdateDialog = ref(false)
@@ -656,14 +640,17 @@ const level = ref<Level>('M')
 
 const qrcodeContainer = ref()
 
-function downloadQrCode() {
+function downloadQrCode(fileName: string = 'QR CODE') {
   const canvas = qrcodeContainer.value.querySelector('canvas')
   const ctx = canvas.getContext('2d')
 
   const borderWidth = 20
+  const textHeight = 15
+  const textPadding = 10
   const borderedCanvas = document.createElement('canvas')
+
   borderedCanvas.width = canvas.width + 2 * borderWidth
-  borderedCanvas.height = canvas.height + 2 * borderWidth
+  borderedCanvas.height = canvas.height + 2 * borderWidth + textHeight + textPadding
 
   const canvasCtx = borderedCanvas.getContext('2d')
 
@@ -673,8 +660,15 @@ function downloadQrCode() {
 
     canvasCtx.drawImage(canvas, borderWidth, borderWidth)
 
+    canvasCtx.fillStyle = 'black'
+    canvasCtx.font = '16px Arial'
+    canvasCtx.textAlign = 'center'
+    const textX = borderedCanvas.width / 2
+    const textY = canvas.height + borderWidth + textPadding + 16
+    canvasCtx.fillText(fileName, textX, textY)
+
     const link = document.createElement('a')
-    link.download = 'QR CODE'
+    link.download = fileName
     link.href = borderedCanvas.toDataURL('image/png')
     link.click()
   }

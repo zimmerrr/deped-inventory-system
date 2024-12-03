@@ -1,12 +1,12 @@
 <template>
   <q-page class="flex flex-center">
     <div class="container">
-      <div class="text-h5 text-white q-mb-md">
+      <div class="text-h5 text-weight-bold text-secondary q-mb-xs">
         LOGS
       </div>
 
-      <div class="bg-white card full-height q-pt-xs">
-        <q-scroll-area style="width: 100%; height: 900px; max-height: 84vh;">
+      <div class="bg-accent card full-height border">
+        <q-scroll-area style="width: 100%; height: 900px; max-height: 80vh;">
           <div
             v-for="(log, idx) in logs "
             :key="idx"
@@ -65,6 +65,9 @@ onMounted(fetchLogs)
   border-bottom: 2px solid black
 .log-subtext
   font-size: 1.4rem
+
+.border
+  border: 15px solid $secondary
 // Mobile
 @media screen and (max-width: $breakpoint-xs-max)
   .log-text

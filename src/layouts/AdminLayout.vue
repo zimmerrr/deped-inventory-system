@@ -13,7 +13,9 @@
               class="logo"
             />
           </q-avatar>
-          <q-toolbar-title />
+          <q-toolbar-title class="text-white text-italic text-h6">
+            "Sa serbisyong totoo at makatao, Bidang Imusenyo ang panalo"
+          </q-toolbar-title>
 
           <q-btn
             flat
@@ -69,7 +71,11 @@ const route = useRoute()
 <style lang="sass">
 .q-layout
   background-color: $accent
-
+  background-image: url('assets/bg.png') !important
+  background-repeat: no-repeat !important
+  background-position: bottom !important
+  background-size: contain !important
+  background-blend-mode: multiply !important
 .logo
   width: 300px
 

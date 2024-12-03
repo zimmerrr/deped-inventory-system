@@ -13,9 +13,9 @@
         />
       </div>
       <div class="column q-col-gutter-md q-pa-sm">
-        <div class="text-center text-white login-text">
+        <div class="text-center text-secondary login-text">
           Inventory Management
-          <span class="text-primary">
+          <span class="text-secondary">
             System
           </span>
         </div>
@@ -24,7 +24,7 @@
             v-model="form.username"
             label="Username"
             color="accent"
-            bg-color="white"
+            bg-color="primary"
             filled
             class="text-primary generic-input"
           />
@@ -33,7 +33,7 @@
           <q-input
             v-model="form.password"
             label="Password"
-            bg-color="white"
+            bg-color="primary"
             color="accent"
             filled
             class="generic-input"
@@ -52,7 +52,7 @@
         </div>
       </div>
       <q-card-actions align="right">
-        <div class="generic-button bg-secondary fit">
+        <div class="generic-button bg-green-13 fit">
           <q-btn
             :loading="loading"
             label="Login"
@@ -101,6 +101,11 @@ async function onSubmit() {
 
     if (isLoggedIn()) {
       router.replace('/')
+      Notify.create({
+        message: 'Logged in successfully',
+        color: 'positive',
+        textColor: 'white',
+      })
     } else {
       Notify.create({
         message: 'Invalid username or password',
