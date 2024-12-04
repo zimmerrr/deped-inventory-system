@@ -135,7 +135,7 @@
           />
           <q-select
             v-model="form.name"
-            label="Item Name"
+            label="File Name"
             color="accent"
             bg-color="primary"
             borderless
@@ -281,7 +281,7 @@
           />
           <q-select
             v-model="form.name"
-            label="Item Name"
+            label="File Name"
             color="accent"
             bg-color="primary"
             borderless
@@ -386,7 +386,7 @@
             />
             <q-select
               v-model="form.name"
-              label="Item Name"
+            label="File Name"
               color="accent"
               bg-color="primary"
               borderless
@@ -672,7 +672,7 @@ const COLUMNS: {
   },
   {
     name: 'name',
-    label: 'ITEM NAME',
+    label: 'FILE NAME',
     field: (r: any) => r.name,
     align: 'center',
   },
