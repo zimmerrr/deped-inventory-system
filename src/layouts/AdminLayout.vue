@@ -27,7 +27,7 @@
           />
           <q-btn
             flat
-            label="Items"
+            label="File"
             color="black"
             no-caps
             class="menu-button"

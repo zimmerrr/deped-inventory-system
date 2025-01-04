@@ -52,7 +52,7 @@
                   <div>
                     <q-btn
                       color="green"
-                      label="Add Item"
+                      label="Add File"
                       class="q-px-md generic-button"
                       @click="showDialog = true;"
                     />
@@ -62,7 +62,7 @@
                   <div>
                     <q-btn
                       color="secondary"
-                      label="Scan Item"
+                      label="Scan File"
                       class="q-px-md generic-button"
                       @click="showScanner = true"
                     />
@@ -89,7 +89,7 @@
                   <div class="row q-gutter-md justify-center">
                     <q-btn
                       v-if="active"
-                      label="VIEW ITEM"
+                      label="VIEW FILE"
                       color="green"
                       @click="
                         showUpdateDialog = true;
@@ -130,7 +130,7 @@
       >
         <div class="column q-col-gutter-md q-pa-sm">
           <div class="text-h4">
-            Add Item
+            Add File
           </div>
           <q-input
             v-model="form.controlNumber"
@@ -397,7 +397,7 @@
             />
             <q-select
               v-model="form.name"
-            label="File Name"
+              label="File Name"
               color="accent"
               bg-color="primary"
               borderless
@@ -546,7 +546,7 @@ async function onSubmit() {
         description: form.description,
       })
       Notify.create({
-        message: 'Item updated successfully',
+        message: 'File updated successfully',
         color: 'green',
       })
 
@@ -589,7 +589,7 @@ async function fetchItems() {
     items.value = _items
     console.log(items.value)
   } catch (error) {
-    console.error('Error fetching items:', error)
+    console.error('Error fetching File:', error)
   } finally {
     loading.value = false
   }
@@ -604,7 +604,7 @@ async function deleteItem(id: string, controlNumber: string) {
         message: `Are you sure you want to delete <b>${controlNumber}</b>?`,
         html: true,
         color: 'black',
-        ok: { label: 'Delete Item', color: 'negative' },
+        ok: { label: 'Delete File', color: 'negative' },
         cancel: true,
       }).onOk(async () => {
         await updateItem({
@@ -619,7 +619,7 @@ async function deleteItem(id: string, controlNumber: string) {
         message: `Are you sure you want to restore <b>${controlNumber}</b>?.`,
         html: true,
         color: 'black',
-        ok: { label: 'Restore Item', color: 'positive' },
+        ok: { label: 'Restore File', color: 'positive' },
         cancel: true,
       }).onOk(async () => {
         await updateItem({
@@ -630,7 +630,7 @@ async function deleteItem(id: string, controlNumber: string) {
       })
     }
   } catch (error) {
-    console.error('Error deleting item:', error)
+    console.error('Error deleting File:', error)
   } finally {
     deleteItemLoading.value = false
   }

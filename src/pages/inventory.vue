@@ -52,7 +52,7 @@
                   <div>
                     <q-btn
                       color="secondary"
-                      label="Scan Item"
+                      label="Scan File"
                       class="q-px-md generic-button"
                       @click="showScanner = true"
                     />
@@ -386,7 +386,7 @@
             />
             <q-select
               v-model="form.name"
-            label="File Name"
+              label="File Name"
               color="accent"
               bg-color="primary"
               borderless
