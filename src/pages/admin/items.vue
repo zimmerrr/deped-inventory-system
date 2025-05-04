@@ -93,7 +93,7 @@
                       color="green"
                       @click="
                         showUpdateDialog = true;
-                        currItem = props.row.name;
+                        currItem = props.row.controlNumber;
                         form._id = props.row._id;
                         form.controlNumber = props.row.controlNumber;
                         form.name = props.row.name;
